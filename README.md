@@ -1,2 +1,2 @@
-# Yandex-_Project
+# Yandex-Project
 Проект игры для проекта Яндекс Лицея 
