@@ -1,18 +1,19 @@
 import pygame
 import sys
 
+# Импортируем необходимые модули
 from pl import *
 from load_file import load_image
 
-player = None
+# Инициализация Pygame
 pygame.init()
-WINDOW_SIZE = 750, 600
+WINDOW_SIZE = width, height = 750, 600
 FPS = 50
-TAIL_SIZE = 500
 screen = pygame.display.set_mode(WINDOW_SIZE)
 clock = pygame.time.Clock()
-lm = []
 
+player = None
+lm = []
 
 def terminate():
     pygame.quit()
@@ -49,6 +50,27 @@ def generate_level(level):
 player = generate_level(load_level("m1.txt"))
 
 
+class Camera:
+    def init(self):
+        self.dx = 0
+        self.dy = 0
+
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    def update(self, target):
+        x, y = target.pos
+        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2) - 125
+        self.dy = -(target.rect.y + target.rect.h // 2 - height // 2) - 50
+        target.move(x + self.dx//25, y + self.dy//25)
+        print(self.dx, self.dy)
+
+
+
+camera = Camera()
+
+
 def start_screen():
     fon = pygame.transform.scale(load_image("fon.png"), WINDOW_SIZE)
     screen.blit(fon, (0, 0))
@@ -66,23 +88,17 @@ def start_screen():
 def move(hero, movement):
     x, y = hero.pos
     if movement == "up":
-        print(y)
-        if y - 1 >= -15:
-            hero.move(x, y - 1)
+        hero.move(x, y - 1)
     elif movement == "down":
-        if (y + 1) * 25 < len(lm[0]) * 500:
-            hero.move(x, y + 1)
+        hero.move(x, y + 1)
     elif movement == "left":
-        if x - 1 >= -15:
-            hero.move(x - 1, y)
+        hero.move(x - 1, y)
     elif movement == "right":
-        if (x + 1) * 25 < len(lm[0][0]) * 500:
-            hero.move(x + 1, y)
+        hero.move(x + 1, y)
 
 
-def main():
-    pygame.display.set_caption("Марио")
-    start_screen()
+def main_game():
+    global player
     running = True
     while running:
         for event in pygame.event.get():
@@ -97,14 +113,19 @@ def main():
                     move(player, "left")
                 elif event.key == pygame.K_RIGHT:
                     move(player, "right")
-
         screen.fill((0, 0, 0))
+        camera.update(player)
+        for sprite in tail_sprite:
+            camera.apply(sprite)
         tail_sprite.draw(screen)
         hero_sprite.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
-
     terminate()
+
+
+start_screen()
+main_game()
 
 
 if __name__ == "__main__":
